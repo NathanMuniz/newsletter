@@ -38,7 +38,38 @@ class TwitchService
 
     }
 
-    public function getAuth
+    public function getAuthenticatedUser(string $token): array
+    {
+        $uri = "users";
+        $response = $this->client->request('GET', $uri, [
+            'headers' => [
+                'Client-ID' => config('connectors.twitch.client_id'),
+                'Authorization' => 'Bearer ' . $token
+            ]
+        ]);
+
+        $result = json_decode($response->getBody(), true)['data'][0];
+        return [
+            'id' => $result['id'],
+            'username' => $result['login'],
+            'email' => $result['email']
+        ];
+    }
+
+    public function revokeToken(string $token): bool
+    {
+        $uri = 'https://id.twitch.tv/oauth2/revoke';
+        $response = $this->client->request('POST', $uri, [
+            'query' => [
+                'client_id' => config('connectors.twitch.client_id'),
+                'client_secret' => config('connectors.twitch.client_secret'),
+                'token' => $token
+            ]
+        ]);
+        dump($response);
+
+        return true;
+    }
 
 
 }
